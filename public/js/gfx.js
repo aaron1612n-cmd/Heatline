@@ -36,7 +36,7 @@ export const PAL = {
 
 const TAU = Math.PI * 2;
 const hash = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
-const yaw = a => Math.PI / 2 - a; // game angle -> three rotation.y for a +z-forward model
+function yaw(a) { return Math.PI / 2 - a; } // game angle -> three rotation.y for a +z-forward model
 
 // ---------- Renderer & camera ----------
 export function createView(canvas, lowEnd) {
@@ -143,6 +143,9 @@ export function buildWorld(view, lvl) {
   });
   root.add(gm);
   // a dark bed under the pavement gives the slabs grout lines
+  // the city keeps going past the edge of the map
+  const beyond = new THREE.Mesh(new THREE.PlaneGeometry(W + 120, H + 120), new THREE.MeshLambertMaterial({ color: 0x15171a }));
+  beyond.rotation.x = -Math.PI / 2; beyond.position.set(W / 2, -.02, H / 2); beyond.receiveShadow = true; root.add(beyond);
   const bed = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshLambertMaterial({ color: 0x1a1a18 }));
   bed.rotation.x = -Math.PI / 2; bed.position.set(W / 2, .01, H / 2); bed.receiveShadow = true; root.add(bed);
 
@@ -315,9 +318,9 @@ export function buildWorld(view, lvl) {
       top.castShadow = body.castShadow = true; body.receiveShadow = top.receiveShadow = true;
       root.add(top, body);
     } else if (c === 'h') {
-      const hy = prop(hydrant(), x + .5, y + .5); world.smash.push(hy); root.add(hy.obj);
+      const hy = prop(hydrant(), x + .5, y + .5); hy.kind = 'hydrant'; world.smash.push(hy); root.add(hy.obj);
     } else if (c === 't') {
-      const tc = prop(bin(), x + .5, y + .5); world.smash.push(tc); root.add(tc.obj);
+      const tc = prop(bin(), x + .5, y + .5); tc.kind = 'bin'; world.smash.push(tc); root.add(tc.obj);
     } else if (c === 'c') {
       const car = parkedCar(hash(x, y)); car.position.set(x + .5, 0, y + .5);
       const horiz = isStreet(at(x - 1, y)) && isStreet(at(x + 1, y));
@@ -331,7 +334,9 @@ export function buildWorld(view, lvl) {
       for (const [dx, dy, a] of [[1, 0, 0], [-1, 0, Math.PI], [0, 1, Math.PI / 2], [0, -1, -Math.PI / 2]]) if (isStreet(at(x + dx, y + dy))) ang = a;
       lamp.rotation.y = yaw(ang);
       root.add(lamp);
-      world.lamps.push({ x: x + .5 + Math.cos(ang) * .9, y: y + .5 + Math.sin(ang) * .9, z: 3.1, r: 5.2, i: 1, color: PAL.sodiumLight });
+      const src = { x: x + .5 + Math.cos(ang) * .9, y: y + .5 + Math.sin(ang) * .9, z: 3.1, r: 5.2, i: 1, color: PAL.sodiumLight };
+      world.lamps.push(src);
+      world.smash.push({ obj: lamp, x: x + .5, y: y + .5, r: .18, vx: 0, vy: 0, vz: 0, z: .2, spin: 0, hit: false, kind: 'lamp', light: src });
     }
   }
   // ceiling tubes inside the job site
@@ -349,7 +354,7 @@ export function buildWorld(view, lvl) {
     const p = new THREE.PointLight(0xffffff, 0, 6, 1.6);
     scene.add(p); world.pool.push(p);
   }
-  world.sources = () => world.lamps.concat(world.tubes.filter(t => t.on));
+  world.sources = () => world.lamps.filter(l => l.i > 0).concat(world.tubes.filter(t => t.on));
   world.updateLights = (cx, cy) => {
     const src = world.sources();
     src.sort((a, b) => ((a.x - cx) ** 2 + (a.y - cy) ** 2) - ((b.x - cx) ** 2 + (b.y - cy) ** 2));
@@ -727,6 +732,17 @@ export function createFx(view) {
     D.m.position.set(x, h + dn * .0004, y); D.m.scale.setScalar(.05); D.m.visible = true; D.size = size; D.grow = kind === 'blood' ? .6 : 6;
     D.m.rotation.y = Math.random() * TAU;
   };
+  // tyre marks: never fade, just recycle
+  const skidN = view.lowEnd ? 300 : 700;
+  const skidMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x050505, transparent: true, opacity: .55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1 }), skidN);
+  skidMesh.frustumCulled = false;
+  for (let i = 0; i < skidN; i++) { tmp.position.set(0, -50, 0); tmp.updateMatrix(); skidMesh.setMatrixAt(i, tmp.matrix); }
+  scene.add(skidMesh);
+  let sn = 0;
+  fx.skid = (x, y, a, h = .095) => {
+    tmp.position.set(x, h, y); tmp.rotation.set(0, yaw(a), 0); tmp.scale.set(.16, 1, .26); tmp.updateMatrix();
+    skidMesh.setMatrixAt(sn, tmp.matrix); sn = (sn + 1) % skidN; skidMesh.instanceMatrix.needsUpdate = true;
+  };
   fx.update = (dt) => {
     for (const k in pools) {
       const P = pools[k];
@@ -756,6 +772,8 @@ export function createFx(view) {
     for (const k in pools) pools[k].arr.forEach(p => { p.life = 0; });
     decals.forEach(D => { D.m.visible = false; });
     tracers.forEach(T => { T.m.visible = false; T.life = 0; });
+    for (let i = 0; i < skidN; i++) { tmp.position.set(0, -50, 0); tmp.rotation.set(0, 0, 0); tmp.scale.setScalar(1); tmp.updateMatrix(); skidMesh.setMatrixAt(i, tmp.matrix); }
+    skidMesh.instanceMatrix.needsUpdate = true;
   };
   return fx;
 }

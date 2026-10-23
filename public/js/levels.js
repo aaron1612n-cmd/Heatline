@@ -68,7 +68,7 @@ function trainingMap() {
 
 // ---------- Job 01: First National ----------
 function bankMap() {
-  const c = city(46, 34, [3, 38], [3, 26], [[45, 3], [45, 4], [45, 5], [3, 33], [4, 33], [5, 33]]);
+  const c = city(46, 34, [3, 38], [3, 26], [[3, 33], [4, 33], [5, 33], [0, 26], [0, 27], [0, 28]]);
   stamp(c, 12, 8, [
     '####ww####dd####ww####',
     '#mmmmmmmmmmmmmmmmmmmm#',
@@ -101,7 +101,7 @@ function bankMap() {
 
 // ---------- Job 02: Marlow Jewellers (tight, lots of glass, more guards) ----------
 function jewelMap() {
-  const c = city(40, 30, [3, 33], [3, 22], [[39, 23], [39, 24], [39, 25], [33, 0], [34, 0], [35, 0]]);
+  const c = city(40, 30, [3, 33], [3, 22], [[39, 22], [39, 23], [39, 24]]);
   stamp(c, 9, 8, [
     '####wwww##dd##wwww####',
     '#mmmmmmmmmmmmmmmmmmmm#',
