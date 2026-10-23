@@ -145,6 +145,7 @@ body[data-input="touch"] #ctx .alt{display:none!important}
 #tutWord.pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
 @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 #tutGlyph svg{width:150px;height:92px}
+@media (max-width:640px){#tut{top:calc(var(--top) + 118px)}}
 #tutGlyph .cap{fill:var(--bone)}
 #tutGlyph .lip{fill:#6c675c}
 #tutGlyph text{font-family:var(--ui);font-weight:700;font-size:22px;fill:var(--night)}
@@ -174,7 +175,7 @@ body[data-input="touch"] #ctx .alt{display:none!important}
 .btn.primary{background:var(--sodium);border-color:var(--sodium);color:var(--night)}
 .btn:hover{background:var(--bone);color:var(--night)}
 .btn.primary:hover{background:#ffb84a}
-body.driving #eye{display:none}
+body.driving #eye,body.driving #bAct{display:none}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 </head>
