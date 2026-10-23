@@ -2,5 +2,7 @@
   "name": "heatline",
   "main": "src/index.js",
   "compatibility_date": "2026-10-01",
-  "workers_dev": true
+  "workers_dev": true,
+  // three.js ships as browser modules; bundle them as plain text so the Worker can serve them.
+  "rules": [{ "type": "Text", "globs": ["**/*.html", "**/public/**/*.js"], "fallthrough": false }]
 }
