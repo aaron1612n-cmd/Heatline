@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#EDE6D6">
+<style>body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
 <title>Heatline</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -160,6 +167,8 @@ body[data-input="touch"] #tut svg{display:none}
 @media (max-height:500px){#tut{top:calc(env(safe-area-inset-top,0px) + 10px);gap:6px}#tut svg{width:96px}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 </style>
+</head>
+<body>
 
 <canvas id="game" aria-label="Heatline game view"></canvas>
 
@@ -1447,3 +1456,5 @@ if (store.get('heatline.tutorial') === '1') showBoard(); else startJob('train');
 requestAnimationFrame(loop);
 })();
 </script>
+</body>
+</html>

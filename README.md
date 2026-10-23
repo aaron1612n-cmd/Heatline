@@ -4,7 +4,7 @@ A 2.5D isometric crew heist game that runs in the browser on phones and PCs. Pla
 
 ## Play
 
-Open `index.html` in a browser. No build step and no dependencies other than Google Fonts.
+Open `public/index.html` in a browser. No build step and no dependencies other than Google Fonts.
 
 The game detects touch or keyboard on load and switches live on the first touch or keypress.
 
@@ -18,3 +18,12 @@ The game detects touch or keyboard on load and switches live on the first touch 
 | Pause | Esc or P | Pause button |
 
 First launch runs a wordless training job; replay it from the board or the pause menu.
+
+## Deploy (Cloudflare Workers)
+
+The game is served by a small Cloudflare Worker (`src/index.js`) that bundles `public/index.html` as text and returns it for every path. Live at https://heatline.avadlabs.workers.dev.
+
+- **Automatic:** every push to `main` deploys via `.github/workflows/deploy.yml`. Add two repository secrets first: `CLOUDFLARE_API_TOKEN` (a token with the "Edit Cloudflare Workers" template) and `CLOUDFLARE_ACCOUNT_ID`.
+- **Manual:** `npx wrangler login` then `npx wrangler deploy`.
+
+The site goes live at `https://heatline.<your-subdomain>.workers.dev`.
